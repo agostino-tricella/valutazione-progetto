@@ -9,10 +9,9 @@ from streamlit_gsheets import GSheetsConnection
 st.set_page_config(page_title="Valutazione Progetto: WHAT vs HOW", layout="wide", page_icon="📊")
 
 st.title("📊 Valutazione Progetto: Matrice WHAT vs HOW")
-st.write("Valuta il personale interno e salva i dati direttamente nel database aziendale Google Sheets.")
+st.write("Valuta il personale interno, inserisci note qualitative e salva i dati nel database Google Sheets.")
 
-# Configurazione Connessione Google Sheets
-# INSERISCI QUI IL LINK COMPLETO DEL TUO FOGLIO GOOGLE SHEETS
+# CONFIGURAZIONE LINK GOOGLE SHEETS (Sostituisci con il tuo link)
 GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/INSERISCI_QUI_IL_TUO_ID_SHEET/edit?usp=sharing"
 
 # ==================== SIDEBAR: INPUT DATI ====================
@@ -36,6 +35,14 @@ h2 = st.sidebar.slider("2. Problem Solving e Iniziativa", 1, 5, 3, key="h2")
 h3 = st.sidebar.slider("3. Comunicazione ed Escalation", 1, 5, 3, key="h3")
 h4 = st.sidebar.slider("4. Adattabilità e Gestione Stress", 1, 5, 3, key="h4")
 h5 = st.sidebar.slider("5. Ownership e Affidabilità", 1, 5, 3, key="h5")
+
+st.sidebar.markdown("---")
+st.sidebar.header("💬 3. COMMENTO QUALITATIVO")
+commento = st.sidebar.text_area(
+    "Commento e note sulla valutazione:",
+    value="Punti di forza: ottima competenza tecnica e puntualità.\nAree di miglioramento: promuovere maggiore collaborazione durante le fasi critiche.",
+    height=120
+)
 
 # ==================== CALCOLI ====================
 media_what = round(float(np.mean([w1, w2, w3, w4, w5])), 2)
@@ -105,7 +112,7 @@ for y_idx in range(5):
             font=dict(size=12, color="black")
         )
 
-# Indicatore dinamico per la persona corrente
+# Indicatore dinamico
 fig.add_trace(go.Scatter(
     x=[x_labels[x_pos - 1]],
     y=[y_labels[y_pos - 1]],
@@ -125,19 +132,22 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True, key=f"matrice_{x_pos}_{y_pos}")
 
+# ==================== MOSTRA COMMENTO SULLA SCHEDA ====================
+st.markdown("---")
+st.subheader("📝 Commento e Note di Valutazione")
+st.info(commento if commento.strip() else "Nessun commento inserito.")
+
 st.markdown("---")
 
-# ==================== SALVATAGGIO IN GOOGLE SHEETS ====================
+# ==================== SALVATAGGIO GOOGLE SHEETS ====================
 st.subheader("💾 Salvataggio nel Database (Google Sheets)")
 
 if st.button("💾 Salva Valutazione in Google Sheets", type="primary"):
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
         
-        # Lettura dati esistenti
         df_existing = conn.read(spreadsheet=GOOGLE_SHEET_URL, ttl="0")
         
-        # Nuova riga
         nuova_riga = pd.DataFrame([{
             "Data": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "Nome": nome,
@@ -148,17 +158,18 @@ if st.button("💾 Salva Valutazione in Google Sheets", type="primary"):
             "X_Pos": x_pos,
             "Y_Pos": y_pos,
             "Profilo": profilo_risultante,
-            "Dettagli_Voti": f"W:[{w1},{w2},{w3},{w4},{w5}] | H:[{h1},{h2},{h3},{h4},{h5}]"
+            "Dettagli_Voti": f"W:[{w1},{w2},{w3},{w4},{w5}] | H:[{h1},{h2},{h3},{h4},{h5}]",
+            "Commento": commento
         }])
         
         df_updated = pd.concat([df_existing, nuova_riga], ignore_index=True)
         conn.update(spreadsheet=GOOGLE_SHEET_URL, data=df_updated)
         
-        st.success(f"✅ Valutazione di **{nome}** salvata con successo in Google Sheets!")
+        st.success(f"✅ Valutazione e commento di **{nome}** salvati con successo!")
     except Exception as e:
-        st.error(f"Errore durante il salvataggio: {e}. Verificare le impostazioni di condivisione del foglio Google.")
+        st.error(f"Errore durante il salvataggio: {e}. Verificare le impostazioni di condivisione del foglio.")
 
-# ==================== TABELLA STORICO TEAM ====================
+# ==================== STORICO TEAM ====================
 st.markdown("---")
 st.subheader("📋 Storico Team Valutato")
 
