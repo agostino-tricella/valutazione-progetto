@@ -13,7 +13,7 @@ st.write("Valuta il personale interno, inserisci note qualitative e salva i dati
 
 # CONFIGURAZIONE LINK / ID GOOGLE SHEETS
 # Sostituisci con l'ID del tuo Google Sheet (la stringa tra /d/ e /edit nel link del foglio)
-SPREADSHEET_ID = "INSERISCI_QUI_IL_TUO_ID_SHEET"
+SPREADSHEET_ID = "1_EqrPXiizq8ZAABNk1Q03zTedrz5VJPduvWKYsU8m14"
 
 # ==================== SIDEBAR: INPUT DATI ====================
 st.sidebar.header("👤 Dati Dipendente")
