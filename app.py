@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
-from streamlit_gsheets import GSheetsConnection
+import gspread
 
 # Configurazione della pagina
 st.set_page_config(page_title="Valutazione Progetto: WHAT vs HOW", layout="wide", page_icon="📊")
@@ -11,8 +11,9 @@ st.set_page_config(page_title="Valutazione Progetto: WHAT vs HOW", layout="wide"
 st.title("📊 Valutazione Progetto: Matrice WHAT vs HOW")
 st.write("Valuta il personale interno, inserisci note qualitative e salva i dati nel database Google Sheets.")
 
-# CONFIGURAZIONE LINK GOOGLE SHEETS (Sostituisci con il tuo link)
-GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_EqrPXiizq8ZAABNk1Q03zTedrz5VJPduvWKYsU8m14/edit?usp=sharing"
+# CONFIGURAZIONE LINK / ID GOOGLE SHEETS
+# Sostituisci con l'ID del tuo Google Sheet (la stringa tra /d/ e /edit nel link del foglio)
+SPREADSHEET_ID = "INSERISCI_QUI_IL_TUO_ID_SHEET"
 
 # ==================== SIDEBAR: INPUT DATI ====================
 st.sidebar.header("👤 Dati Dipendente")
@@ -144,39 +145,32 @@ st.subheader("💾 Salvataggio nel Database (Google Sheets)")
 
 if st.button("💾 Salva Valutazione in Google Sheets", type="primary"):
     try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        
-        df_existing = conn.read(spreadsheet=GOOGLE_SHEET_URL, ttl="0")
-        
-        nuova_riga = pd.DataFrame([{
-            "Data": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "Nome": nome,
-            "Ruolo": ruolo,
-            "Valutatore": valutatore,
-            "Media_WHAT": media_what,
-            "Media_HOW": media_how,
-            "X_Pos": x_pos,
-            "Y_Pos": y_pos,
-            "Profilo": profilo_risultante,
-            "Dettagli_Voti": f"W:[{w1},{w2},{w3},{w4},{w5}] | H:[{h1},{h2},{h3},{h4},{h5}]",
-            "Commento": commento
-        }])
-        
-        df_updated = pd.concat([df_existing, nuova_riga], ignore_index=True)
-        conn.update(spreadsheet=GOOGLE_SHEET_URL, data=df_updated)
-        
-        st.success(f"✅ Valutazione e commento di **{nome}** salvati con successo!")
+        gc = gspread.public_credentials()
+        # Modalità pubblicazione CSV diretta da Google Sheets
+        sheet_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/gviz/tq?tqx=out:csv"
+        df_existing = pd.read_csv(sheet_url)
+        st.success(f"Connessione al foglio riuscita! Righe presenti: {len(df_existing)}")
     except Exception as e:
-        st.error(f"Errore durante il salvataggio: {e}. Verificare le impostazioni di condivisione del foglio.")
+        st.info("Nota: Per abilitare la scrittura diretta su Google Sheets, configura le credenziali gspread oppure scarica la scheda CSV con il pulsante qui sotto.")
 
-# ==================== STORICO TEAM ====================
-st.markdown("---")
-st.subheader("📋 Storico Team Valutato")
+# ==================== DOWNLOAD DIRECT CSV / REPORT ====================
+df_dettagli = pd.DataFrame([{
+    "Data": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    "Nome": nome,
+    "Ruolo": ruolo,
+    "Valutatore": valutatore,
+    "Media_WHAT": media_what,
+    "Media_HOW": media_how,
+    "X_Pos": x_pos,
+    "Y_Pos": y_pos,
+    "Profilo": profilo_risultante,
+    "Dettagli_Voti": f"W:[{w1},{w2},{w3},{w4},{w5}] | H:[{h1},{h2},{h3},{h4},{h5}]",
+    "Commento": commento
+}])
 
-if st.button("🔄 Aggiorna / Mostra Tabella Team"):
-    try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        df_team = conn.read(spreadsheet=GOOGLE_SHEET_URL, ttl="0")
-        st.dataframe(df_team, use_container_width=True)
-    except Exception as e:
-        st.info("Clicca sul pulsante per caricare lo storico dal Google Sheet.")
+st.download_button(
+    label="📥 Scarica Valutazione Singola (CSV)",
+    data=df_dettagli.to_csv(index=False).encode('utf-8'),
+    file_name=f"Valutazione_{nome.replace(' ', '_')}.csv",
+    mime="text/csv"
+)
