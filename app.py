@@ -12,7 +12,7 @@ st.title("📊 Valutazione Progetto: Matrice WHAT vs HOW")
 st.write("Valuta il personale interno, inserisci note qualitative e salva i dati nel database Google Sheets.")
 
 # CONFIGURAZIONE LINK GOOGLE SHEETS (Sostituisci con il tuo link)
-GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/INSERISCI_QUI_IL_TUO_ID_SHEET/edit?usp=sharing"
+GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_EqrPXiizq8ZAABNk1Q03zTedrz5VJPduvWKYsU8m14/edit?usp=sharing"
 
 # ==================== SIDEBAR: INPUT DATI ====================
 st.sidebar.header("👤 Dati Dipendente")
