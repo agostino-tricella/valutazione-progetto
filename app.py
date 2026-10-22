@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
+import urllib.parse
 
 # Configurazione della pagina
 st.set_page_config(page_title="Valutazione Progetto: WHAT vs HOW", layout="wide", page_icon="📊")
@@ -10,8 +11,23 @@ st.set_page_config(page_title="Valutazione Progetto: WHAT vs HOW", layout="wide"
 st.title("📊 Valutazione Progetto: Matrice WHAT vs HOW")
 st.write("Valuta il personale interno, inserisci note qualitative e salva i dati direttamente su Google Sheets.")
 
-# LINK AL TUO GOOGLE FORM
-FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSecva6sLSBuaDDhVADMTtjXlVmScPCOg5ffi8hESsKU7yjNqg/viewform"
+# LINK BASE DEL GOOGLE FORM
+FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSecva6sLSBuaDDhVADMTtjXlVmScPCOg5ffi8hESsKU7yjNqg/viewform"
+
+# MAPPA DELLE 11 ENTRY ESTRATTE DAL FORM
+ENTRY_MAP = {
+    "data": "entry.724133456",
+    "nome": "entry.756219816",
+    "ruolo": "entry.673061402",
+    "valutatore": "entry.1824122495",
+    "media_what": "entry.465627857",
+    "media_how": "entry.483643984",
+    "x_pos": "entry.969822932",
+    "y_pos": "entry.1057253397",
+    "profilo": "entry.814279471",
+    "dettagli": "entry.849542168",
+    "commento": "entry.408649876"
+}
 
 # ==================== SIDEBAR: INPUT DATI ====================
 st.sidebar.header("👤 Dati Dipendente")
@@ -79,108 +95,3 @@ grid_labels = [
     ["Underperformer", "Underperformer", "Mercenario", "Mercenario", "Lupo Solitario"],
     ["Underperformer", "Da Sviluppare", "Core Player", "Core Solido", "Core Solido"],
     ["Volenteroso", "Volenteroso", "Core Solido", "Top Performer", "Top Performer"],
-    ["Volenteroso", "Volenteroso", "Core Solido", "Top Performer", "Role Model"]
-]
-
-color_values = [
-    [0, 1, 2, 2, 1],
-    [1, 1, 2, 2, 2],
-    [1, 2, 3, 4, 4],
-    [2, 2, 4, 5, 5],
-    [2, 2, 4, 5, 6]
-]
-
-fig = go.Figure()
-
-fig.add_trace(go.Heatmap(
-    z=color_values,
-    x=x_labels,
-    y=y_labels,
-    colorscale='YlGnBu',
-    showscale=False,
-    hoverinfo='none'
-))
-
-for y_idx in range(5):
-    for x_idx in range(5):
-        fig.add_annotation(
-            x=x_labels[x_idx],
-            y=y_labels[y_idx],
-            text=grid_labels[y_idx][x_idx],
-            showarrow=False,
-            font=dict(size=12, color="black")
-        )
-
-# Indicatore dinamico
-fig.add_trace(go.Scatter(
-    x=[x_labels[x_pos - 1]],
-    y=[y_labels[y_pos - 1]],
-    mode='markers+text',
-    marker=dict(size=32, color='red', symbol='x-thin', line=dict(width=5, color='red')),
-    text=[f"<b>📍 {nome}</b>"],
-    textposition="top center",
-    name="In Valutazione"
-))
-
-fig.update_layout(
-    xaxis_title="<b>WHAT: Obiettivi Concreti (Asse X)</b>",
-    yaxis_title="<b>HOW: Comportamenti / Soft Skills (Asse Y)</b>",
-    height=500,
-    margin=dict(l=40, r=40, t=40, b=40)
-)
-
-st.plotly_chart(fig, use_container_width=True, key=f"matrice_{x_pos}_{y_pos}")
-
-st.markdown("---")
-st.subheader("📝 Commento e Note di Valutazione")
-st.info(commento if commento.strip() else "Nessun commento inserito.")
-
-st.markdown("---")
-
-# ==================== SALVATAGGIO SU GOOGLE FORM / SHEETS ====================
-st.subheader("💾 Salvataggio nel Foglio Google")
-
-st.markdown(
-    f"""
-    <a href="{FORM_URL}" target="_blank">
-        <button style="
-            background-color: #FF4B4B;
-            color: white;
-            padding: 14px 28px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        ">
-            🚀 Clicca qui per registrare la risposta nel Foglio Google
-        </button>
-    </a>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown("---")
-
-# ==================== DOWNLOAD DIRECT CSV ====================
-df_dettagli = pd.DataFrame([{
-    "Data": datetime.now().strftime("%Y-%m-%d %H:%M"),
-    "Nome": nome,
-    "Ruolo": ruolo,
-    "Valutatore": valutatore,
-    "Media_WHAT": media_what,
-    "Media_HOW": media_how,
-    "X_Pos": x_pos,
-    "Y_Pos": y_pos,
-    "Profilo": profilo_risultante,
-    "Dettagli_Voti": f"W:[{w1},{w2},{w3},{w4},{w5}] | H:[{h1},{h2},{h3},{h4},{h5}]",
-    "Commento": commento
-}])
-
-st.download_button(
-    label="📥 Scarica Scheda Singola in CSV",
-    data=df_dettagli.to_csv(index=False).encode('utf-8'),
-    file_name=f"Valutazione_{nome.replace(' ', '_')}.csv",
-    mime="text/csv"
-)
