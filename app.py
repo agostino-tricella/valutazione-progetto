@@ -3,17 +3,15 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
-import requests
 
 # Configurazione della pagina
 st.set_page_config(page_title="Valutazione Progetto: WHAT vs HOW", layout="wide", page_icon="📊")
 
 st.title("📊 Valutazione Progetto: Matrice WHAT vs HOW")
-st.write("Valuta il personale interno, inserisci note qualitative e salva i dati nel tuo foglio Google Sheets.")
+st.write("Valuta il personale interno, inserisci note qualitative e salva i dati direttamente su Google Sheets.")
 
-# ==================== INSERISCI QUI IL LINK DEL TUO GOOGLE FORM ====================
-# Sostituisci questo URL con il link di invio del tuo Google Form (es. https://docs.google.com/forms/d/e/1FAIpQLS.../formResponse)
-FORM_URL = "https://forms.gle/fEBnZNdDM3qNRJ7R8"
+# LINK AL TUO GOOGLE FORM
+FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSecva6sLSBuaDDhVADMTtjXlVmScPCOg5ffi8hESsKU7yjNqg/viewform"
 
 # ==================== SIDEBAR: INPUT DATI ====================
 st.sidebar.header("👤 Dati Dipendente")
@@ -139,7 +137,33 @@ st.info(commento if commento.strip() else "Nessun commento inserito.")
 
 st.markdown("---")
 
-# ==================== SALVATAGGIO CSV ====================
+# ==================== SALVATAGGIO SU GOOGLE FORM / SHEETS ====================
+st.subheader("💾 Salvataggio nel Foglio Google")
+
+st.markdown(
+    f"""
+    <a href="{FORM_URL}" target="_blank">
+        <button style="
+            background-color: #FF4B4B;
+            color: white;
+            padding: 14px 28px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        ">
+            🚀 Clicca qui per registrare la risposta nel Foglio Google
+        </button>
+    </a>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+# ==================== DOWNLOAD DIRECT CSV ====================
 df_dettagli = pd.DataFrame([{
     "Data": datetime.now().strftime("%Y-%m-%d %H:%M"),
     "Nome": nome,
@@ -155,7 +179,7 @@ df_dettagli = pd.DataFrame([{
 }])
 
 st.download_button(
-    label="📥 Scarica Scheda Valutazione Singola (CSV)",
+    label="📥 Scarica Scheda Singola in CSV",
     data=df_dettagli.to_csv(index=False).encode('utf-8'),
     file_name=f"Valutazione_{nome.replace(' ', '_')}.csv",
     mime="text/csv"
