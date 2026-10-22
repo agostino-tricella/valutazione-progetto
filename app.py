@@ -13,7 +13,7 @@ st.write("Valuta il personale interno, inserisci note qualitative e salva i dati
 
 # ==================== INSERISCI QUI IL LINK DEL TUO GOOGLE FORM ====================
 # Sostituisci questo URL con il link di invio del tuo Google Form (es. https://docs.google.com/forms/d/e/1FAIpQLS.../formResponse)
-FORM_URL = "INSERISCI_QUI_L_URL_FORM_RESPONSE"
+FORM_URL = "https://forms.gle/fEBnZNdDM3qNRJ7R8"
 
 # ==================== SIDEBAR: INPUT DATI ====================
 st.sidebar.header("👤 Dati Dipendente")
