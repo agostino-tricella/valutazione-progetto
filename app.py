@@ -14,26 +14,28 @@ st.write("Valuta il personale interno, inserisci note qualitative e salva i dati
 # LINK BASE DEL GOOGLE FORM
 FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSecva6sLSBuaDDhVADMTtjXlVmScPCOg5ffi8hESsKU7yjNqg/viewform"
 
-# MAPPA DELLE 11 ENTRY ESTRATTE DAL FORM
+# MAPPA DEGLI ENTRY DEL FORM CON EMAIL INCLUSA
 ENTRY_MAP = {
-    "data": "entry.724133456",
-    "nome": "entry.756219816",
-    "ruolo": "entry.673061402",
-    "valutatore": "entry.1824122495",
-    "media_what": "entry.465627857",
-    "media_how": "entry.483643984",
-    "x_pos": "entry.969822932",
-    "y_pos": "entry.1057253397",
-    "profilo": "entry.814279471",
-    "dettagli": "entry.849542168",
-    "commento": "entry.408649876"
+    "email": "entry.724133456",
+    "data": "entry.756219816",
+    "nome": "entry.673061402",
+    "ruolo": "entry.1824122495",
+    "valutatore": "entry.465627857",
+    "media_what": "entry.483643984",
+    "media_how": "entry.969822932",
+    "x_pos": "entry.1057253397",
+    "y_pos": "entry.814279471",
+    "profilo": "entry.849542168",
+    "dettagli": "entry.408649876",
+    "commento": "entry.123456789"
 }
 
 # ==================== SIDEBAR: INPUT DATI ====================
-st.sidebar.header("👤 Dati Dipendente")
-nome = st.sidebar.text_input("Nome e Cognome", "Mario Rossi")
+st.sidebar.header("👤 Dati Dipendente e Valutatore")
+email_valutatore = st.sidebar.text_input("Email Valutatore", "agostino.tricella@fontanagruppo.com")
+nome = st.sidebar.text_input("Nome e Cognome Dipendente", "Mario Rossi")
 ruolo = st.sidebar.text_input("Ruolo nel Progetto", "Developer / Analyst")
-valutatore = st.sidebar.text_input("Valutatore (PM)", "Giuseppe Bianchi")
+valutatore = st.sidebar.text_input("Valutatore (PM)", "Agostino Tricella")
 
 st.sidebar.markdown("---")
 st.sidebar.header("🎯 1. OBIETTIVI DI PROGETTO (WHAT)")
@@ -54,7 +56,7 @@ h5 = st.sidebar.slider("5. Ownership e Affidabilità", 1, 5, 3, key="h5")
 st.sidebar.markdown("---")
 st.sidebar.header("💬 3. COMMENTO QUALITATIVO")
 commento = st.sidebar.text_area(
-    "Commento e note sulla valutazione:",
+    "Commenti e note sulla valutazione:",
     value="Punti di forza: ottima competenza tecnica e puntualità.\nAree di miglioramento: promuovere maggiore collaborazione durante le fasi critiche.",
     height=120
 )
@@ -84,7 +86,7 @@ col3.metric("Profilo Mappato", profilo_risultante)
 
 st.markdown("---")
 
-# ==================== MATRICE GRAFICA INTERATTIVA ====================
+# ==================== MATRICE GRAFICA INTERATTIVA (ROSSO - GIALLO - VERDE) ====================
 st.subheader("🗺️ Matrice Posizionamento 5x5")
 
 x_labels = ['1 (Basso)', '2 (M. Basso)', '3 (Standard)', '4 (Alto)', '5 (Eccellente)']
@@ -98,12 +100,13 @@ grid_labels = [
     ["Volenteroso", "Volenteroso", "Core Solido", "Top Performer", "Role Model"]
 ]
 
+# Punteggi cromatici: 0-1 = Rosso (critico), 2-3 = Giallo/Arancio (intermedio), 4-5 = Verde (ottimo)
 color_values = [
-    [0, 1, 2, 2, 1],
-    [1, 1, 2, 2, 2],
-    [1, 2, 3, 4, 4],
-    [2, 2, 4, 5, 5],
-    [2, 2, 4, 5, 6]
+    [0, 1, 2, 1, 0],  # Y=1 (Basso): Azione PIP (Rosso scuro), Underperformer, Mercenario, Lupo, Lupo Tossico
+    [1, 1, 2, 2, 1],  # Y=2 (M. Basso)
+    [1, 2, 3, 4, 4],  # Y=3 (Standard): Core Player (Giallo/Verde chiaro)
+    [2, 2, 4, 5, 5],  # Y=4 (Alto): Top Performer (Verde)
+    [2, 2, 4, 5, 6]   # Y=5 (Eccellente): Role Model (Verde scuro brillante)
 ]
 
 fig = go.Figure()
@@ -112,7 +115,7 @@ fig.add_trace(go.Heatmap(
     z=color_values,
     x=x_labels,
     y=y_labels,
-    colorscale='YlGnBu',
+    colorscale='RdYlGn',  # Scala Rosso -> Giallo -> Verde
     showscale=False,
     hoverinfo='none'
 ))
@@ -122,17 +125,17 @@ for y_idx in range(5):
         fig.add_annotation(
             x=x_labels[x_idx],
             y=y_labels[y_idx],
-            text=grid_labels[y_idx][x_idx],
+            text=f"<b>{grid_labels[y_idx][x_idx]}</b>",
             showarrow=False,
             font=dict(size=12, color="black")
         )
 
-# Indicatore dinamico
+# Indicatore dinamico in evidenza
 fig.add_trace(go.Scatter(
     x=[x_labels[x_pos - 1]],
     y=[y_labels[y_pos - 1]],
     mode='markers+text',
-    marker=dict(size=32, color='red', symbol='x-thin', line=dict(width=5, color='red')),
+    marker=dict(size=36, color='black', symbol='x-thin', line=dict(width=6, color='black')),
     text=[f"<b>📍 {nome}</b>"],
     textposition="top center",
     name="In Valutazione"
@@ -141,26 +144,26 @@ fig.add_trace(go.Scatter(
 fig.update_layout(
     xaxis_title="<b>WHAT: Obiettivi Concreti (Asse X)</b>",
     yaxis_title="<b>HOW: Comportamenti / Soft Skills (Asse Y)</b>",
-    height=500,
+    height=520,
     margin=dict(l=40, r=40, t=40, b=40)
 )
 
 st.plotly_chart(fig, use_container_width=True, key=f"matrice_{x_pos}_{y_pos}")
 
 st.markdown("---")
-st.subheader("📝 Commento e Note di Valutazione")
+st.subheader("📝 Commenti e Note di Valutazione")
 st.info(commento if commento.strip() else "Nessun commento inserito.")
 
 st.markdown("---")
 
-# ==================== COSTROZIONE URL PRECOMPILATO PER GOOGLE FORM ====================
+# ==================== COSTROZIONE URL PRECOMPILATO ====================
 st.subheader("💾 Salvataggio nel Foglio Google")
 
 data_ora = datetime.now().strftime("%Y-%m-%d %H:%M")
 dettagli_voti = f"W:[{w1},{w2},{w3},{w4},{w5}] | H:[{h1},{h2},{h3},{h4},{h5}]"
 
-# Generazione query di precompilazione
 params = {
+    ENTRY_MAP["email"]: email_valutatore,
     ENTRY_MAP["data"]: data_ora,
     ENTRY_MAP["nome"]: nome,
     ENTRY_MAP["ruolo"]: ruolo,
@@ -201,6 +204,7 @@ st.markdown("---")
 
 # ==================== DOWNLOAD DIRECT CSV ====================
 df_dettagli = pd.DataFrame([{
+    "Email": email_valutatore,
     "Data": data_ora,
     "Nome": nome,
     "Ruolo": ruolo,
