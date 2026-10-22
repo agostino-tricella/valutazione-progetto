@@ -3,17 +3,17 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
-import gspread
+import requests
 
 # Configurazione della pagina
 st.set_page_config(page_title="Valutazione Progetto: WHAT vs HOW", layout="wide", page_icon="📊")
 
 st.title("📊 Valutazione Progetto: Matrice WHAT vs HOW")
-st.write("Valuta il personale interno, inserisci note qualitative e salva i dati nel database Google Sheets.")
+st.write("Valuta il personale interno, inserisci note qualitative e salva i dati nel tuo foglio Google Sheets.")
 
-# CONFIGURAZIONE LINK / ID GOOGLE SHEETS
-# Sostituisci con l'ID del tuo Google Sheet (la stringa tra /d/ e /edit nel link del foglio)
-SPREADSHEET_ID = "1_EqrPXiizq8ZAABNk1Q03zTedrz5VJPduvWKYsU8m14"
+# ==================== INSERISCI QUI IL LINK DEL TUO GOOGLE FORM ====================
+# Sostituisci questo URL con il link di invio del tuo Google Form (es. https://docs.google.com/forms/d/e/1FAIpQLS.../formResponse)
+FORM_URL = "INSERISCI_QUI_L_URL_FORM_RESPONSE"
 
 # ==================== SIDEBAR: INPUT DATI ====================
 st.sidebar.header("👤 Dati Dipendente")
@@ -133,27 +133,13 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True, key=f"matrice_{x_pos}_{y_pos}")
 
-# ==================== MOSTRA COMMENTO SULLA SCHEDA ====================
 st.markdown("---")
 st.subheader("📝 Commento e Note di Valutazione")
 st.info(commento if commento.strip() else "Nessun commento inserito.")
 
 st.markdown("---")
 
-# ==================== SALVATAGGIO GOOGLE SHEETS ====================
-st.subheader("💾 Salvataggio nel Database (Google Sheets)")
-
-if st.button("💾 Salva Valutazione in Google Sheets", type="primary"):
-    try:
-        gc = gspread.public_credentials()
-        # Modalità pubblicazione CSV diretta da Google Sheets
-        sheet_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/gviz/tq?tqx=out:csv"
-        df_existing = pd.read_csv(sheet_url)
-        st.success(f"Connessione al foglio riuscita! Righe presenti: {len(df_existing)}")
-    except Exception as e:
-        st.info("Nota: Per abilitare la scrittura diretta su Google Sheets, configura le credenziali gspread oppure scarica la scheda CSV con il pulsante qui sotto.")
-
-# ==================== DOWNLOAD DIRECT CSV / REPORT ====================
+# ==================== SALVATAGGIO CSV ====================
 df_dettagli = pd.DataFrame([{
     "Data": datetime.now().strftime("%Y-%m-%d %H:%M"),
     "Nome": nome,
@@ -169,7 +155,7 @@ df_dettagli = pd.DataFrame([{
 }])
 
 st.download_button(
-    label="📥 Scarica Valutazione Singola (CSV)",
+    label="📥 Scarica Scheda Valutazione Singola (CSV)",
     data=df_dettagli.to_csv(index=False).encode('utf-8'),
     file_name=f"Valutazione_{nome.replace(' ', '_')}.csv",
     mime="text/csv"
