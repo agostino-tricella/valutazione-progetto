@@ -68,12 +68,37 @@ media_how = round(float(np.mean([h1, h2, h3, h4, h5])), 2)
 x_pos = int(np.clip(round(media_what), 1, 5))
 y_pos = int(np.clip(round(media_how), 1, 5))
 
+# Mappa dei profili con terminologia HR Corporate
 profili = {
-    (5, 5): "Role Model", (4, 5): "Top Performer", (3, 5): "Core Player Solido", (2, 5): "Volenteroso / Inefficace", (1, 5): "Volenteroso / Inefficace",
-    (5, 4): "Top Performer", (4, 4): "Top Performer", (3, 4): "Core Player Solido", (2, 4): "Volenteroso / Inefficace", (1, 4): "Volenteroso / Inefficace",
-    (5, 3): "Core Player Solido", (4, 3): "Core Player Solido", (3, 3): "Core Player", (2, 3): "Da Sviluppare", (1, 3): "Underperformer",
-    (5, 2): "Lupo Solitario", (4, 2): "Mercenario (Rischio)", (3, 2): "Mercenario (Rischio)", (2, 2): "Underperformer", (1, 2): "Underperformer",
-    (5, 1): "Lupo Solitario (Tossico)", (4, 1): "Lupo Solitario", (3, 1): "Mercenario (Rischio)", (2, 1): "Underperformer", (1, 1): "Azione Immediata (PIP)"
+    (5, 5): "Role Model", 
+    (4, 5): "Top Performer", 
+    (3, 5): "Talento Chiave", 
+    (2, 5): "High Potential (HiPo)", 
+    (1, 5): "Profilo in Sviluppo",
+    
+    (5, 4): "Top Performer", 
+    (4, 4): "Future Leader", 
+    (3, 4): "Core Performer", 
+    (2, 4): "High Potential (HiPo)", 
+    (1, 4): "Profilo in Sviluppo",
+    
+    (5, 3): "Pilastro Aziendale", 
+    (4, 3): "Contributor Stabile", 
+    (3, 3): "Core Performer", 
+    (2, 3): "Emergente", 
+    (1, 3): "Incarico sotto Standard",
+    
+    (5, 2): "Individual Contributor", 
+    (4, 2): "Specialista Autonomo", 
+    (3, 2): "Profilo da Allineare", 
+    (2, 2): "Incarico sotto Standard", 
+    (1, 2): "Action Plan (PIP)",
+    
+    (5, 1): "Individual Contributor", 
+    (4, 1): "Specialista Autonomo", 
+    (3, 1): "Rischio di Allineamento", 
+    (2, 1): "Action Plan (PIP)", 
+    (1, 1): "Action Plan (PIP)"
 }
 
 profilo_risultante = profili.get((x_pos, y_pos), "Non Definito")
@@ -86,27 +111,26 @@ col3.metric("Profilo Mappato", profilo_risultante)
 
 st.markdown("---")
 
-# ==================== MATRICE GRAFICA INTERATTIVA (ROSSO - GIALLO - VERDE) ====================
+# ==================== MATRICE GRAFICA INTERATTIVA (CON TERMINI HR) ====================
 st.subheader("🗺️ Matrice Posizionamento 5x5")
 
 x_labels = ['1 (Basso)', '2 (M. Basso)', '3 (Standard)', '4 (Alto)', '5 (Eccellente)']
 y_labels = ['1 (Basso)', '2 (M. Basso)', '3 (Standard)', '4 (Alto)', '5 (Eccellente)']
 
 grid_labels = [
-    ["Azione PIP", "Underperformer", "Mercenario", "Lupo Solitario", "Lupo Tossico"],
-    ["Underperformer", "Underperformer", "Mercenario", "Mercenario", "Lupo Solitario"],
-    ["Underperformer", "Da Sviluppare", "Core Player", "Core Solido", "Core Solido"],
-    ["Volenteroso", "Volenteroso", "Core Solido", "Top Performer", "Top Performer"],
-    ["Volenteroso", "Volenteroso", "Core Solido", "Top Performer", "Role Model"]
+    ["Action Plan (PIP)", "Action Plan (PIP)", "Rischio Allineamento", "Specialista Autonomo", "Individual Contributor"],
+    ["Action Plan (PIP)", "Incarico sotto Standard", "Profilo da Allineare", "Specialista Autonomo", "Individual Contributor"],
+    ["Incarico sotto Standard", "Emergente", "Core Performer", "Contributor Stabile", "Pilastro Aziendale"],
+    ["Profilo in Sviluppo", "High Potential (HiPo)", "Core Performer", "Future Leader", "Top Performer"],
+    ["Profilo in Sviluppo", "High Potential (HiPo)", "Talento Chiave", "Top Performer", "Role Model"]
 ]
 
-# Punteggi cromatici: 0-1 = Rosso (critico), 2-3 = Giallo/Arancio (intermedio), 4-5 = Verde (ottimo)
 color_values = [
-    [0, 1, 2, 1, 0],  # Y=1 (Basso): Azione PIP (Rosso scuro), Underperformer, Mercenario, Lupo, Lupo Tossico
-    [1, 1, 2, 2, 1],  # Y=2 (M. Basso)
-    [1, 2, 3, 4, 4],  # Y=3 (Standard): Core Player (Giallo/Verde chiaro)
-    [2, 2, 4, 5, 5],  # Y=4 (Alto): Top Performer (Verde)
-    [2, 2, 4, 5, 6]   # Y=5 (Eccellente): Role Model (Verde scuro brillante)
+    [0, 0, 1, 2, 2],
+    [0, 1, 2, 2, 2],
+    [1, 2, 3, 4, 5],
+    [2, 3, 3, 5, 5],
+    [2, 3, 4, 5, 6]
 ]
 
 fig = go.Figure()
@@ -115,7 +139,7 @@ fig.add_trace(go.Heatmap(
     z=color_values,
     x=x_labels,
     y=y_labels,
-    colorscale='RdYlGn',  # Scala Rosso -> Giallo -> Verde
+    colorscale='RdYlGn',  # Sfumatura Rosso -> Giallo -> Verde
     showscale=False,
     hoverinfo='none'
 ))
@@ -127,7 +151,7 @@ for y_idx in range(5):
             y=y_labels[y_idx],
             text=f"<b>{grid_labels[y_idx][x_idx]}</b>",
             showarrow=False,
-            font=dict(size=12, color="black")
+            font=dict(size=11, color="black")
         )
 
 # Indicatore dinamico in evidenza
@@ -144,7 +168,7 @@ fig.add_trace(go.Scatter(
 fig.update_layout(
     xaxis_title="<b>WHAT: Obiettivi Concreti (Asse X)</b>",
     yaxis_title="<b>HOW: Comportamenti / Soft Skills (Asse Y)</b>",
-    height=520,
+    height=530,
     margin=dict(l=40, r=40, t=40, b=40)
 )
 
